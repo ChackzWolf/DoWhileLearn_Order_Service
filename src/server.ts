@@ -66,7 +66,7 @@ const grpcServer = () => {
     server.bindAsync(
         `0.0.0.0:${port}`,
         grpc.ServerCredentials.createInsecure(),
-        (err, port) => {
+        (err, port) => {  
             if (err) {
                 console.error("Error happened in gRPC service:", err);
                 return;
