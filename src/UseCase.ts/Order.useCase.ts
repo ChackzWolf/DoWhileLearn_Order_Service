@@ -2,7 +2,7 @@ import { IOrder } from "../Interfaces/IOrder";
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { OrderRepository } from "../Repositories/Order.repository";
+import { OrderData, OrderRepository } from "../Repositories/Order.repository";
 import Stripe from "stripe";
 
 const orderRepository = new OrderRepository()
@@ -14,23 +14,41 @@ export class OrderService {
     async CreateOrder(orderData: IOrder) {
         try {
             console.log('Reached use case for purchasing order');
+            const price = parseFloat(orderData.price);  // Convert string to number
+            const tutorShare = (price * 0.95).toFixed(2);
+            const adminShare = (price * 0.05).toFixed(2);
 
+            const data:OrderData = {
+                userId: orderData.userId,
+                tutorId: orderData.tutorId,
+                courseId: orderData.courseId,
+                transactionId: orderData.transactionId,
+                title: orderData.title,
+                thumbnail: orderData.thumbnail,
+                price: orderData.price,
+                adminShare: adminShare.toString(),
+                tutorShare: tutorShare.toString(),
+                paymentStatus:true
+            }
 
             // Save the order in the database
-            const order = await orderRepository.saveOrder({
-                ...orderData,
-                transactionId: "session.id",
-                paymentStatus: false,
-            });
+            const order = await orderRepository.saveOrder(data);
+            console.log(order, 'this is created order')
+            if(order.success){
+                return {
+                    success: true,
+                    message: "Order successfully created",
+                    order:order.order,
+                };
+            }else{
+                 return {
+                    success:false,
+                    message:"order creation failed",
+                 }
+            }
 
-            return {
-                success: true,
-                message: "Order successfully created",
-                sessionId: "session.id", 
-                order,
-            };
         } catch (error) {
-            console.log("Error in purchasing course(use-case):", error);
+            console.log("Error in purchasing course(use-case):", error);  
             return { success: false, message: "Failed to create order." };
         }
     }

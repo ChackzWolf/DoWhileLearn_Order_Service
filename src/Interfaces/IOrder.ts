@@ -15,5 +15,4 @@ export interface IOrder {
     category: string;
     level: string;
     totalLessons: number;
-    discountPrice: string;
 }

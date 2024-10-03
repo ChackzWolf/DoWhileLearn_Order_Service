@@ -1,9 +1,21 @@
 
 import { Order } from "../Model/Order.model";
 
-import { IOrder } from "../Interfaces/IOrder"
+
+export interface OrderData {
+    userId: string;
+    tutorId: string;
+    courseId: string;
+    transactionId: string;
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string;
+    tutorShare: string;
+    paymentStatus:boolean;
+}
 export class OrderRepository {
-    async saveOrder(orderData:IOrder){
+    async saveOrder(orderData:OrderData){
         try {
             const newOrder = new Order({
                 ...orderData,
