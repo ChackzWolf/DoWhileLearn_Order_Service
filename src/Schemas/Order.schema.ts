@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { IOrder } from "../Interfaces/IOrder";
+import { IOrder } from "../Interfaces/Models/IOrder";
 
 export interface ICourseDocument extends IOrder, Document {}
 

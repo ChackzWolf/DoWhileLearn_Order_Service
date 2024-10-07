@@ -1,5 +1,5 @@
 
-import { Order } from "../Model/Order.model";
+import { Order } from "../Schemas/Order.schema";
 
 
 export interface OrderData {

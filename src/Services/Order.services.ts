@@ -1,17 +1,19 @@
-import { IOrder } from "../Interfaces/IOrder";
+import { IOrder } from "../Interfaces/Models/IOrder";
 import dotenv from 'dotenv';
 dotenv.config();
 
 import { OrderData, OrderRepository } from "../Repositories/Order.repository";
 import Stripe from "stripe";
+import { IOrderService } from "../Interfaces/IService/IService.interface";
+import { CreateOrderDTO, CreateOrderResponse } from "../Interfaces/DTOs/IController.dto";
+
 
 const orderRepository = new OrderRepository()
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-export class OrderService {
-
-    async CreateOrder(orderData: IOrder) {
+export class OrderService implements IOrderService{
+    async CreateOrder(orderData: CreateOrderDTO): Promise<CreateOrderResponse> {
         try {
             console.log('Reached use case for purchasing order');
             const price = parseFloat(orderData.price);  // Convert string to number
