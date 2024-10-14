@@ -6,11 +6,12 @@ import { OrderData, OrderRepository } from "../Repositories/Order.repository";
 import Stripe from "stripe";
 import { IOrderService } from "../Interfaces/IService/IService.interface";
 import { CreateOrderDTO, CreateOrderResponse } from "../Interfaces/DTOs/IController.dto";
+import { configs } from "../Configs/ENV-Configs/ENV.configs";
 
 
 const orderRepository = new OrderRepository()
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(configs.STRIPE_SECRET_KEY!);
 
 export class OrderService implements IOrderService{
     async CreateOrder(orderData: CreateOrderDTO): Promise<CreateOrderResponse> {

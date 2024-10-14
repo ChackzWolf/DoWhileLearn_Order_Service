@@ -3,12 +3,12 @@ import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
 import { OrderController }  from "./Controllers/Order.controller";
-import { connectDB } from "./Configs/MongoDB";
+import { connectDB } from "./Configs/DB_configs/MongoDB";
 import express from "express"
 import morgan from 'morgan';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import config from "./Configs/Config";
+import { configs } from "./Configs/ENV-Configs/ENV.configs";
 import cors from 'cors';
 const app = express();
 app.use(cors({
@@ -47,7 +47,7 @@ const logger = winston.createLogger({
       new DailyRotateFile({
         filename: 'logs/application-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxFiles: '7d' // Keep logs for 14 days
+        maxFiles: configs.LOG_RETENTION_DAYS // Keep logs for 14 days
       })
     ],
   });
@@ -67,7 +67,7 @@ const packageDefinition = protoLoader.loadSync(
 const orderProto = grpc.loadPackageDefinition(packageDefinition) as any;
 
 const server = new grpc.Server();
-const port = config.port;
+const port = configs.ORDER_GRPC_PORT;
 
 const grpcServer = () => {
     server.bindAsync(
