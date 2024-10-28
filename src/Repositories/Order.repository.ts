@@ -10,12 +10,12 @@ export interface OrderData {
     title: string;
     thumbnail: string;
     price: string;
-    adminShare: string;
+    adminShare: string; 
     tutorShare: string;
     paymentStatus:boolean;
 }
 export class OrderRepository {
-    async saveOrder(orderData:OrderData){
+    async saveOrder(orderData:any){
         try {
             const newOrder = new Order({
                 ...orderData,

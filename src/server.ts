@@ -35,6 +35,7 @@ dotenv.config()
 
 
 
+
 // error log
 const logger = winston.createLogger({
     level: 'info',
@@ -91,4 +92,14 @@ server.addService(orderProto.OrderService.service, {
   CreateOrder: controller.CreateOrder,
 });
 
-grpcServer(); // Start the gRPC server
+grpcServer(); // Start the gRPC server 
+
+// Start Kafka consumer
+controller.start()
+  .catch(error => console.error('Failed to start kafka order service:', error));
+
+const PORT = configs.PORT
+app.listen(PORT, () => {
+  console.log(`Order service running on port ${PORT}`);
+});
+  

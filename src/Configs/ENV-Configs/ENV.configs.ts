@@ -4,6 +4,9 @@ dotenv.config();
 
 
 export const configs={
+    // LISTENER PORT
+    PORT : process.env.PORT || 3008,
+
     // GRPC PORT CONFIG
     ORDER_GRPC_PORT : process.env.ORDER_GRPC_PORT || 5008,
 
