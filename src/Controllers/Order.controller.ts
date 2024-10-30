@@ -2,7 +2,7 @@ import * as grpc from '@grpc/grpc-js';
 import { OrderService } from "../Services/Order.services";
 import { IOrderController } from '../Interfaces/IControllers/IController.interfaces';
 import { CreateOrderDTO, CreateOrderResponse } from '../Interfaces/DTOs/IController.dto';
-import { kafkaConfig } from "../Configs/Kafka";
+import {kafkaConfig} from "../Configs/Kafka"
 import { KafkaMessage } from 'kafkajs';
 const orderService = new OrderService()
 // types/events.ts
@@ -16,40 +16,71 @@ export interface OrderEvent {
   }
   
   // types/events.ts
-  export interface PaymentEvent {
-    orderId: string;
+  export interface OrderEventData {
     userId: string;
-    courseId: string;
     tutorId: string;
-    amount: number;
-    status: 'SUCCESS' | 'FAILED';
+    courseId: string;
+    transactionId: string;
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string; 
+    tutorShare: string;
+    paymentStatus:boolean;
     timestamp: Date;
+    status: string;
   }
 export class OrderController implements IOrderController {
     
     async start(): Promise<void> {
+        const topics =          [
+          'order.process',
+          'order.rollback'
+        ]
+
         await kafkaConfig.consumeMessages(
           'order-service-group',
-          ['payment.success','transaction-failed'],
-          this.handleMessage.bind(this)
+          topics,
+          this.routeMessage.bind(this)
         );
       }
   
+      async routeMessage(topics:string[], message:KafkaMessage, topic:string):Promise<void>{
+        try {
+          switch (topic) {
+            case 'order.process':
+                await this.handleMessage(message);
+                break;
+            case 'order.rollback':
+                await this.handleRollback(message);
+                break;
+            default:
+                console.warn(`Unhandled topic: ${topic}`);
+        }
+        } catch (error) {
+          
+        }
+      }
       // checking order  success or fail
       private async handleMessage(message: KafkaMessage): Promise<void> {
         try {
-          const paymentEvent: PaymentEvent = JSON.parse(message.value?.toString() || '');
+          const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
           console.log('START', paymentEvent, 'MESAGe haaha')
-          if(paymentEvent.status !== 'SUCCESS'){
-            await orderService.handleTransactionFail(paymentEvent)
-            return
-          }
           await orderService.handlePaymentSuccess(paymentEvent);
         } catch (error) {
           console.error('Error processing message:', error);
         }
       }
 
+      async handleRollback(message:KafkaMessage): Promise<void>{
+        try {
+          const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
+          console.log('START Role back', paymentEvent, 'MESAGe haaha');
+          await orderService.handleTransactionFail(paymentEvent);
+        } catch (error) {
+          
+        }
+      }
 
     async CreateOrder(call: grpc.ServerUnaryCall<CreateOrderDTO, CreateOrderResponse>, callback: grpc.sendUnaryData<CreateOrderResponse>): Promise<void> {     
         try {

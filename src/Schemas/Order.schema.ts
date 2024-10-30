@@ -56,6 +56,9 @@ const OrderSchema: Schema = new Schema({
     type: Map,
     of: String,
   },
+  status: { 
+    type: String 
+  }
 });
 
 

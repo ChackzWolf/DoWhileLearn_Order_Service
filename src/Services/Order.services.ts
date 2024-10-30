@@ -20,14 +20,19 @@ export interface OrderEvent {
   }
   
   // types/events.ts
-  export interface PaymentEvent {
-    orderId: string;
+  export interface OrderEventData {
     userId: string;
-    courseId: string;
     tutorId: string;
-    amount: number;
-    status: 'SUCCESS' | 'FAILED';
+    courseId: string;
+    transactionId: string;
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string; 
+    tutorShare: string; 
+    paymentStatus:boolean;
     timestamp: Date;
+    status: string;
   }
 const orderRepository = new OrderRepository()
 
@@ -37,52 +42,43 @@ export class OrderService implements IOrderService{
 
     
 
-    async handlePaymentSuccess(paymentEvent: PaymentEvent): Promise<void> {
+    async handlePaymentSuccess(paymentEvent: OrderEventData): Promise<void> {
       try {
         // Create order in database
         
-        await orderRepository.saveOrder(paymentEvent);
-  
-        const orderEvent: OrderEvent = {
-          orderId: paymentEvent.orderId,
-          userId: paymentEvent.userId,
-          courseId: paymentEvent.courseId,
-          tutorId: paymentEvent.tutorId,
-          status: 'SUCCESS',
-          timestamp: new Date()
-        };
-        await kafkaConfig.sendMessage('order.success', orderEvent);
-        throw Error
-      } catch (error) {
-        console.error('Order creation failed:', error);
-        
-        const failureEvent: OrderEvent = {
+        const response = await orderRepository.saveOrder(paymentEvent);
+        if(!response.success){
+          throw new Error("order success is false");
+        }
+        await kafkaConfig.sendMessage('success.order.update', {
+          success: true,
+          service: 'ORDER_SERVICE',
+          transactionId: paymentEvent.transactionId
+        });
+      
+      } catch (error:any) {
+        console.error('Order processing failed:', error);
+      
+        // Notify orchestrator of failure
+        await kafkaConfig.sendMessage('transaction-failed', {
           ...paymentEvent,
+          service: 'ORDER_SERVICE',
           status: 'FAILED',
-          timestamp: new Date()
-        };
-  
-        await kafkaConfig.sendMessage('transaction-failed', failureEvent);
+          error: error.message
+        });
       }
     }
 
-    async handleTransactionFail(failedTransactionEvent:PaymentEvent){
+    async handleTransactionFail(failedTransactionEvent:OrderEventData){
       try {
-        this.roleBackOrder(failedTransactionEvent);
-
+        await orderRepository.deleteOrder(failedTransactionEvent.transactionId)
+        await kafkaConfig.sendMessage('rollback-completed', {
+          transactionId: failedTransactionEvent.transactionId,
+          service: 'ORDER_SERVICE'
+        });
       } catch (error) {
-        
+        console.error('Order rollback failed:', error)
       }
-    }
-
-    private async roleBackOrder(failedTransactionEvent: PaymentEvent)  {
-      // Implement order role back here
-      console.log("Role back transaction fail", failedTransactionEvent);
-    }
-
-    private async createOrder(paymentEvent: PaymentEvent): Promise<void> {
-      // Implement order creation logic here
-      console.log(`Creating order for payment: ${paymentEvent.orderId}`);
     }
 
 /////////////////// above create order sructure is temporary;
