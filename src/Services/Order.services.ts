@@ -50,9 +50,10 @@ export class OrderService implements IOrderService{
         if(!response.success){
           throw new Error("order success is false");
         }
-        await kafkaConfig.sendMessage('success.order.update', {
+        await kafkaConfig.sendMessage('order.response', {
           success: true,
-          service: 'ORDER_SERVICE',
+          service: 'order-service',
+          status: 'COMPLETED',
           transactionId: paymentEvent.transactionId
         });
       
@@ -60,21 +61,21 @@ export class OrderService implements IOrderService{
         console.error('Order processing failed:', error);
       
         // Notify orchestrator of failure
-        await kafkaConfig.sendMessage('transaction-failed', {
+        await kafkaConfig.sendMessage('order.response', {
           ...paymentEvent,
-          service: 'ORDER_SERVICE',
+          service: 'order-service',
           status: 'FAILED',
           error: error.message
         });
       }
     }
-
+ 
     async handleTransactionFail(failedTransactionEvent:OrderEventData){
       try {
         await orderRepository.deleteOrder(failedTransactionEvent.transactionId)
         await kafkaConfig.sendMessage('rollback-completed', {
           transactionId: failedTransactionEvent.transactionId,
-          service: 'ORDER_SERVICE'
+          service: 'order-service'
         });
       } catch (error) {
         console.error('Order rollback failed:', error)

@@ -34,13 +34,13 @@ export class OrderController implements IOrderController {
     
     async start(): Promise<void> {
         const topics =          [
-          'order.process',
-          'order.rollback'
+          'order.update',
+          'order-service.rollback'
         ]
 
         await kafkaConfig.consumeMessages(
-          'order-service-group',
-          topics,
+          'order-service-group', 
+          topics, 
           this.routeMessage.bind(this)
         );
       }
@@ -48,16 +48,16 @@ export class OrderController implements IOrderController {
       async routeMessage(topics:string[], message:KafkaMessage, topic:string):Promise<void>{
         try {
           switch (topic) {
-            case 'order.process':
-                await this.handleMessage(message);
+            case 'order.update':
+                await this.handleMessage(message); 
                 break;
-            case 'order.rollback':
+            case 'order-service.rollback': 
                 await this.handleRollback(message);
                 break;
-            default:
+            default: 
                 console.warn(`Unhandled topic: ${topic}`);
-        }
-        } catch (error) {
+          }
+        } catch (error) { 
           
         }
       }
@@ -74,6 +74,7 @@ export class OrderController implements IOrderController {
 
       async handleRollback(message:KafkaMessage): Promise<void>{
         try {
+          console.log('triggered rollback,')
           const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
           console.log('START Role back', paymentEvent, 'MESAGe haaha');
           await orderService.handleTransactionFail(paymentEvent);
