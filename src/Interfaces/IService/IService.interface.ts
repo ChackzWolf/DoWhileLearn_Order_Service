@@ -1,5 +1,7 @@
-import { CreateOrderDTO, CreateOrderResponse } from "../DTOs/IController.dto";
+import { OrderEventData } from "../DTOs/IController.dto";
+
 
 export interface IOrderService {
-    CreateOrder(orderData: CreateOrderDTO):Promise<CreateOrderResponse>
+    handlePaymentSuccess(paymentEvent: OrderEventData): Promise<void>
+    handleTransactionFail(failedTransactionEvent:OrderEventData):Promise<void>
 }

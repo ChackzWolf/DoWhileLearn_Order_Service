@@ -1,46 +1,16 @@
-import { IOrder } from "../Interfaces/Models/IOrder";
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { OrderData, OrderRepository } from "../Repositories/Order.repository";
-import Stripe from "stripe";
+import { OrderRepository } from "../Repositories/Order_repositories/Order.repository";
 import { IOrderService } from "../Interfaces/IService/IService.interface";
-import { CreateOrderDTO, CreateOrderResponse } from "../Interfaces/DTOs/IController.dto";
-import { configs } from "../Configs/ENV-Configs/ENV.configs";
-import { kafkaConfig } from "../Configs/Kafka";
+import { kafkaConfig } from "../Configs/Kafka_Configs/Kafka.configs";
+import { OrderEventData } from "../Interfaces/DTOs/IController.dto";
 
-// types/events.ts
-export interface OrderEvent {
-    orderId: string;
-    userId: string;
-    courseId: string;
-    tutorId: string;
-    status: 'SUCCESS' | 'FAILED';
-    timestamp: Date;
-  }
-  
-  // types/events.ts
-  export interface OrderEventData {
-    userId: string;
-    tutorId: string;
-    courseId: string;
-    transactionId: string;
-    title: string;
-    thumbnail: string;
-    price: string;
-    adminShare: string; 
-    tutorShare: string; 
-    paymentStatus:boolean;
-    timestamp: Date;
-    status: string;
-  }
+
 const orderRepository = new OrderRepository()
 
-const stripe = new Stripe(configs.STRIPE_SECRET_KEY!);
 
 export class OrderService implements IOrderService{
-
-    
 
     async handlePaymentSuccess(paymentEvent: OrderEventData): Promise<void> {
       try {
@@ -56,6 +26,7 @@ export class OrderService implements IOrderService{
           status: 'COMPLETED',
           transactionId: paymentEvent.transactionId
         });
+        console.log('after sennding the message hahaha')
       
       } catch (error:any) {
         console.error('Order processing failed:', error);
@@ -67,10 +38,11 @@ export class OrderService implements IOrderService{
           status: 'FAILED',
           error: error.message
         });
+        console.log('after sennding the message hahaha')
       }
     }
  
-    async handleTransactionFail(failedTransactionEvent:OrderEventData){
+    async handleTransactionFail(failedTransactionEvent:OrderEventData):Promise<void>{
       try {
         await orderRepository.deleteOrder(failedTransactionEvent.transactionId)
         await kafkaConfig.sendMessage('rollback-completed', {
@@ -82,46 +54,11 @@ export class OrderService implements IOrderService{
       }
     }
 
-/////////////////// above create order sructure is temporary;
-    async CreateOrder(orderData: CreateOrderDTO): Promise<CreateOrderResponse> {
-        try {
-            console.log('Reached use case for purchasing order');
-            const price = parseFloat(orderData.price);  // Convert string to number
-            const tutorShare = (price * 0.95).toFixed(2);
-            const adminShare = (price * 0.05).toFixed(2);
-
-            const data:OrderData = {
-                userId: orderData.userId,
-                tutorId: orderData.tutorId,
-                courseId: orderData.courseId,
-                transactionId: orderData.transactionId,
-                title: orderData.title,
-                thumbnail: orderData.thumbnail,
-                price: orderData.price,
-                adminShare: adminShare.toString(),
-                tutorShare: tutorShare.toString(),
-                paymentStatus:true
-            }
-
-            // Save the order in the database
-            const order = await orderRepository.saveOrder(data);
-            console.log(order, 'this is created order')
-            if(order.success){
-                return {
-                    success: true,
-                    message: "Order successfully created",
-                    order:order.order,
-                };
-            }else{
-                 return {
-                    success:false,
-                    message:"order creation failed",
-                 }
-            }
-
-        } catch (error) {
-            console.log("Error in purchasing course(use-case):", error);  
-            return { success: false, message: "Failed to create order." };
-        }
+    async fetchAllOrders(){
+      try {
+        
+      } catch (error) {
+        
+      }
     }
 }

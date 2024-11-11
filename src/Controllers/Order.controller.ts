@@ -1,35 +1,13 @@
 import * as grpc from '@grpc/grpc-js';
 import { OrderService } from "../Services/Order.services";
 import { IOrderController } from '../Interfaces/IControllers/IController.interfaces';
-import { CreateOrderDTO, CreateOrderResponse } from '../Interfaces/DTOs/IController.dto';
-import {kafkaConfig} from "../Configs/Kafka"
+import {kafkaConfig} from "../Configs/Kafka_Configs/Kafka.configs"
 import { KafkaMessage } from 'kafkajs';
-const orderService = new OrderService()
-// types/events.ts
-export interface OrderEvent {
-    orderId: string;
-    userId: string;
-    courseId: string;
-    tutorId: string;
-    status: 'SUCCESS' | 'FAILED';
-    timestamp: Date;
-  }
+import { OrderEventData } from '../Interfaces/DTOs/IController.dto';
+
   
-  // types/events.ts
-  export interface OrderEventData {
-    userId: string;
-    tutorId: string;
-    courseId: string;
-    transactionId: string;
-    title: string;
-    thumbnail: string;
-    price: string;
-    adminShare: string; 
-    tutorShare: string;
-    paymentStatus:boolean;
-    timestamp: Date;
-    status: string;
-  }
+const orderService = new OrderService()
+
 export class OrderController implements IOrderController {
     
     async start(): Promise<void> {
@@ -61,8 +39,8 @@ export class OrderController implements IOrderController {
           
         }
       }
-      // checking order  success or fail
-      private async handleMessage(message: KafkaMessage): Promise<void> {
+      
+      async handleMessage(message: KafkaMessage): Promise<void> {
         try {
           const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
           console.log('START', paymentEvent, 'MESAGe haaha')
@@ -82,27 +60,6 @@ export class OrderController implements IOrderController {
           
         }
       }
-
-    async CreateOrder(call: grpc.ServerUnaryCall<CreateOrderDTO, CreateOrderResponse>, callback: grpc.sendUnaryData<CreateOrderResponse>): Promise<void> {     
-        try {
-            const orderData:CreateOrderDTO  = call.request; 
-            console.log("Received order data from API Gateway:", orderData);
-            const result = await orderService.CreateOrder(orderData);
-
-            if (result.success) {
-                console.log("Order placed successfully:", result);
-
-                callback(null,{success: result.success, order: result.order, message: result.message}); // Send order data in response
-            } else {
-                console.log("Order placement failed:", result);
-                callback(null, { message: "error creating order",success:false}); // Send empty session id and null data on failure
-            }
-        } catch (error) {
-            console.error("Error in purchasing the course:", error);
-            callback(error as grpc.ServiceError);
-        }
-    };  
-
 
 
 }

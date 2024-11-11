@@ -1,21 +1,24 @@
+import { KafkaMessage } from "kafkajs";
 import { IOrder } from "../Models/IOrder";
 
-export interface CreateOrderDTO {
-    courseId: string;
+export interface OrderEventData {
     userId: string;
     tutorId: string;
-    category: string;
-    thumbnail: string;
-    title : string;
-    price: string;
-    level: string;
-    totalLessons: string;
+    courseId: string;
     transactionId: string;
-}
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string; 
+    tutorShare: string; 
+    paymentStatus:boolean;
+    timestamp: Date;
+    status: string;
+  }
 
-export interface CreateOrderResponse{
-    success:boolean;
-    order?:IOrder; 
-    message:string
-}
+  export interface RouteMessageRequestdto {
+    topics:string[];
+     message:KafkaMessage;
+     topic:string;
+  }
 

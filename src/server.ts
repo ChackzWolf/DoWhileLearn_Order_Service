@@ -3,12 +3,12 @@ import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
 import { OrderController }  from "./Controllers/Order.controller";
-import { connectDB } from "./Configs/DB_configs/MongoDB";
+import { connectDB } from "./Configs/DB_Configs/MongoDB";
 import express from "express"
 import morgan from 'morgan';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import { configs } from "./Configs/ENV-Configs/ENV.configs";
+import { configs } from "./Configs/ENV_Configs/ENV.configs";
 import cors from 'cors';
 const app = express();
 app.use(cors({
@@ -21,13 +21,7 @@ app.options('*', cors());  // Allow preflight requests
 app.use(express.json());
 
 
-
-
 connectDB()
-dotenv.config()
-
-
-
 
 // error log
 const logger = winston.createLogger({
@@ -82,7 +76,7 @@ const controller = new OrderController();
 
 // Register the service with the controller
 server.addService(orderProto.OrderService.service, {
-  CreateOrder: controller.CreateOrder,
+
 });
 
 grpcServer(); // Start the gRPC server 
@@ -95,4 +89,3 @@ const PORT = configs.PORT
 app.listen(PORT, () => {
   console.log(`Order service running on port ${PORT}`);
 });
-  
