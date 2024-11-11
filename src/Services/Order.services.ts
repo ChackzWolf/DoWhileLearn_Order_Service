@@ -5,6 +5,8 @@ import { OrderRepository } from "../Repositories/Order_repositories/Order.reposi
 import { IOrderService } from "../Interfaces/IService/IService.interface";
 import { kafkaConfig } from "../Configs/Kafka_Configs/Kafka.configs";
 import { OrderEventData } from "../Interfaces/DTOs/IController.dto";
+import { STATUS_CODES } from 'http';
+import { IOrder } from '../Interfaces/Models/IOrder';
 
 
 const orderRepository = new OrderRepository()
@@ -44,7 +46,8 @@ export class OrderService implements IOrderService{
  
     async handleTransactionFail(failedTransactionEvent:OrderEventData):Promise<void>{
       try {
-        await orderRepository.deleteOrder(failedTransactionEvent.transactionId)
+        const response = await orderRepository.deleteOrder(failedTransactionEvent.transactionId)
+        console.log(response, 'response status')
         await kafkaConfig.sendMessage('rollback-completed', {
           transactionId: failedTransactionEvent.transactionId,
           service: 'order-service'
@@ -54,11 +57,28 @@ export class OrderService implements IOrderService{
       }
     }
 
-    async fetchAllOrders(){
+    async fetchAllOrders():Promise<{success:boolean,orderData?:IOrder[]}>{
       try {
-        
+        const orderData = await orderRepository.getAllOrders();
+        if(!orderData){
+          return {success:false};
+        }
+        return {success:true, orderData};
       } catch (error) {
-        
+        throw new Error(`error form service while fetching orders ${error}`)
+      }
+    }
+
+    async fetchOrdersOfTutor(data:{tutorId:string}):Promise<{ success:boolean, message?:string, orderData?:IOrder[]}>{
+      const tutorId = data.tutorId;
+      try {
+        const orderData = await orderRepository.findOrdersByTutorId(tutorId);
+        if(!orderData){
+          return {message:'Order not found', success:false}
+        }
+        return {success:true, orderData};
+      } catch (error) {
+        throw new Error(`error form service while fetching tutor's orders ${error}`)
       }
     }
 }

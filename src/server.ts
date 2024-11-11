@@ -71,12 +71,10 @@ const grpcServer = () => {
     );
 };
 
-// Controller instantiation
 const controller = new OrderController();
 
-// Register the service with the controller
 server.addService(orderProto.OrderService.service, {
-
+  FetchOrderByTutorId: controller.getOrdersOfTutor,
 });
 
 grpcServer(); // Start the gRPC server 

@@ -6,8 +6,8 @@ import { ICourseDocument } from "../../Schemas/Order.schema";
 
 export class OrderRepository extends BaseRepository<ICourseDocument> {
     constructor() {
-        super(Order);
-    }
+        super(Order); 
+    } 
 
     async saveOrder(orderData: IOrder) {
         return this.save(orderData);
@@ -16,4 +16,13 @@ export class OrderRepository extends BaseRepository<ICourseDocument> {
     async deleteOrder(transactionId: string) {
         return this.delete({ transactionId });
     }
+
+    async getAllOrders() { 
+        return this.findAll();
+    }
+
+    async findOrdersByTutorId(tutorId: string): Promise<IOrder[]> {
+        return this.findMany({ tutorId });
+    }
+    
 }

@@ -1,4 +1,4 @@
-import { Model, Document } from 'mongoose';
+import { Model, Document, FilterQuery } from 'mongoose';
 
 export class BaseRepository<T extends Document> {
     protected model: Model<T>;
@@ -27,6 +27,37 @@ export class BaseRepository<T extends Document> {
         } catch (error) {
             console.error("Delete error:", error);
             return { success: false, message: "Delete failed" };
+        }
+    }
+
+    async findAll(): Promise<T[]> {
+        return this.model.find();
+      }
+
+      async findOne(filter: Partial<T>): Promise<T | null> {
+        try {
+            return await this.model.findOne(filter as FilterQuery<T>);
+        } catch (error) {
+            console.error("Error finding one:", error);
+            return null;
+        }
+    }
+
+    async findMany(filter: Partial<T>): Promise<T[]> {
+        try {
+            return await this.model.find(filter as FilterQuery<T>);
+        } catch (error) {
+            console.error("Error finding documents:", error);
+            return [];
+        }
+    }
+
+      async count(filter: Partial<T> = {}): Promise<number> {
+        try {
+            return await this.model.countDocuments(filter as FilterQuery<T>);
+        } catch (error) {
+            console.error("Error counting documents:", error);
+            return 0;
         }
     }
 }

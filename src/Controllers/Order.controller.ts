@@ -1,9 +1,11 @@
-import * as grpc from '@grpc/grpc-js';
 import { OrderService } from "../Services/Order.services";
 import { IOrderController } from '../Interfaces/IControllers/IController.interfaces';
 import {kafkaConfig} from "../Configs/Kafka_Configs/Kafka.configs"
 import { KafkaMessage } from 'kafkajs';
 import { OrderEventData } from '../Interfaces/DTOs/IController.dto';
+import * as grpc from '@grpc/grpc-js';
+import { response } from "express";
+
 
   
 const orderService = new OrderService()
@@ -57,10 +59,20 @@ export class OrderController implements IOrderController {
           console.log('START Role back', paymentEvent, 'MESAGe haaha');
           await orderService.handleTransactionFail(paymentEvent);
         } catch (error) {
-          
+          console.error('Error processing message:', error);
         }
       }
 
+      async getOrdersOfTutor(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
+        try {
+          const data = call.request;
+          console.log('triggered payouts', data)
+          const response = await orderService.fetchOrdersOfTutor(data);
+          callback(null,response)
+        } catch (error) {
+          console.error('Error processing message:', error);
+        }
+      }
 
 }
 
