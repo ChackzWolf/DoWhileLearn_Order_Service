@@ -22,7 +22,7 @@ export class OrderController implements IOrderController {
           'order-service-group', 
           topics, 
           this.routeMessage.bind(this)
-        );
+        ); 
       }
   
       async routeMessage(topics:string[], message:KafkaMessage, topic:string):Promise<void>{
@@ -36,7 +36,7 @@ export class OrderController implements IOrderController {
                 break;
             default: 
                 console.warn(`Unhandled topic: ${topic}`);
-          }
+          } 
         } catch (error) { 
           
         }
@@ -71,6 +71,15 @@ export class OrderController implements IOrderController {
           callback(null,response)
         } catch (error) {
           console.error('Error processing message:', error);
+        }
+      }
+
+      async fetchAllOrders(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
+        try {
+          const response = await orderService.fetchAllOrders();
+          callback(null,response);
+        } catch (error) {
+          
         }
       }
 

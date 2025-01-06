@@ -75,6 +75,7 @@ const controller = new OrderController();
 
 server.addService(orderProto.OrderService.service, {
   FetchOrderByTutorId: controller.getOrdersOfTutor,
+  FetchAllOrders: controller.fetchAllOrders
 });
 
 grpcServer(); // Start the gRPC server 
