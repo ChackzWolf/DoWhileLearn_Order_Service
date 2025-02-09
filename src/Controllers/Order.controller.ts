@@ -77,12 +77,12 @@ export class OrderController implements IOrderController {
       async fetchAllOrders(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
         try {
           const response = await orderService.fetchAllOrders();
+          console.log(response,'fetch all orders controller')
           callback(null,response);
         } catch (error) {
           
         }
-      }
-
+      } 
 }
 
- 
+  

@@ -1,14 +1,46 @@
+# Stage 1: Build the application
+FROM node:18-alpine AS builder
 
-FROM node:16-alpine
+# Set working directory for all build stages
+WORKDIR /usr/src/app
 
-WORKDIR /app
-
+# Copy package files first to leverage Docker cache
 COPY package*.json ./
-RUN npm install
+COPY tsconfig.json ./
 
-COPY . .
+# Install all dependencies including development ones
+RUN npm install --ignore-scripts
+
+# Copy source code and Proto files
+COPY src ./src
+COPY src/Protos ./src/Protos
+
+# Run the TypeScript compilation
 RUN npm run build
 
-EXPOSE 3008
+# Stage 2: Create the production image
+FROM node:18-alpine
 
-CMD ["npm", "start"]
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+# Setting both ports - one for gRPC and one for Kafka communication
+ENV PORT=3008
+ENV ORDER_GRPC_PORT=5008
+
+# Install only production dependencies
+COPY package*.json ./
+RUN npm install --omit=dev --ignore-scripts
+
+# Copy compiled JavaScript and Proto files from builder
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/src/Protos ./dist/Protos
+
+# Set proper permissions and user for security
+RUN chown -R node:node /usr/src/app
+USER node
+
+# Expose both ports - gRPC and Kafka
+EXPOSE ${PORT}
+EXPOSE ${ORDER_GRPC_PORT}
+
+CMD ["node", "dist/server.js"]

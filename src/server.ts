@@ -1,9 +1,8 @@
-import dotenv from "dotenv";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
 import { OrderController }  from "./Controllers/Order.controller";
-import { connectDB } from "./Configs/DB_Configs/MongoDB";
+import { connectDB } from "./Configs/DB_configs/MongoDB";
 import express from "express"
 import morgan from 'morgan';
 import winston from 'winston';
@@ -23,7 +22,7 @@ app.use(express.json());
 
 connectDB()
 
-// error log
+// error log 
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine( 
@@ -47,7 +46,7 @@ const logger = winston.createLogger({
 // error log end
 
 const packageDefinition = protoLoader.loadSync(
-    path.join(__dirname, "protos/order.proto"),
+    path.join(__dirname, "Protos/order.proto"),
     {keepCase:true , longs: String, enums: String , defaults: true, oneofs: true}
 )
 
