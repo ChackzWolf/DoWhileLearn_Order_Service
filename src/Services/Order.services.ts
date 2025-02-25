@@ -81,4 +81,17 @@ export class OrderService implements IOrderService{
         throw new Error(`error form service while fetching tutor's orders ${error}`)
       }
     }
+
+    async fetchOrdersOfUser(data:{tutorId:string}):Promise<{ success:boolean, message?:string, orderData?:IOrder[]}>{
+      const tutorId = data.tutorId;
+      try {
+        const orderData = await orderRepository.findOrdersByUserId(tutorId);
+        if(!orderData){
+          return {message:'Order not found', success:false}
+        }
+        return {success:true, orderData};
+      } catch (error) {
+        throw new Error(`error form service while fetching tutor's orders ${error}`)
+      }
+    }
 }

@@ -24,5 +24,9 @@ export class OrderRepository extends BaseRepository<ICourseDocument> {
     async findOrdersByTutorId(tutorId: string): Promise<IOrder[]> {
         return this.findMany({ tutorId });
     }
+
+    async findOrdersByUserId(userId: string): Promise<IOrder[]> {
+        return this.findMany({ userId });
+    }
     
 }

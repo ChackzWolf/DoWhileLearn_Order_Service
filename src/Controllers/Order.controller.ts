@@ -74,6 +74,18 @@ export class OrderController implements IOrderController {
         }
       }
 
+      async getOrdersOfUser(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
+        try {
+          const data = call.request;
+          console.log('triggered payouts', data)
+          const response = await orderService.fetchOrdersOfUser(data);
+          callback(null,response)
+        } catch (error) {
+          console.error('Error processing message:', error);
+        }
+      }
+
+
       async fetchAllOrders(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
         try {
           const response = await orderService.fetchAllOrders();
