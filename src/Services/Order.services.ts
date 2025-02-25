@@ -82,10 +82,10 @@ export class OrderService implements IOrderService{
       }
     }
 
-    async fetchOrdersOfUser(data:{tutorId:string}):Promise<{ success:boolean, message?:string, orderData?:IOrder[]}>{
-      const tutorId = data.tutorId;
+    async fetchOrdersOfUser(data:{userId:string}):Promise<{ success:boolean, message?:string, orderData?:IOrder[]}>{
+      const userId = data.userId;
       try {
-        const orderData = await orderRepository.findOrdersByUserId(tutorId);
+        const orderData = await orderRepository.findOrdersByUserId(userId);
         if(!orderData){
           return {message:'Order not found', success:false}
         }
