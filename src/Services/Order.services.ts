@@ -5,7 +5,6 @@ import { OrderRepository } from "../Repositories/Order_repositories/Order.reposi
 import { IOrderService } from "../Interfaces/IService/IService.interface";
 import { kafkaConfig } from "../Configs/Kafka_Configs/Kafka.configs";
 import { OrderEventData } from "../Interfaces/DTOs/IController.dto";
-import { STATUS_CODES } from 'http';
 import { IOrder } from '../Interfaces/Models/IOrder';
 
 
